@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Parent Login — Child Care IS</title>
+<link rel="stylesheet" href="./styles.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="app-header"><div class="container header-content"><div class="branding"><h1>Parent Login</h1></div></div></header>
+<main class="container main-content">
+  <section class="card">
+    <form id="form">
+      <label>Email<input type="email" id="email" required/></label>
+      <label>Password<input type="password" id="password" required/></label>
+      <button class="btn primary" type="submit">Login</button>
+    </form>
+    <div id="alert" class="alert" aria-live="polite"></div>
+  </section>
+</main>
+<script type="module">
+  import { initApp, signIn, auth, db } from './app/app.js';
+  import { getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
+
+  const alertEl = document.getElementById('alert');
+  const setAlert = (m,t='info') => { alertEl.textContent=m; alertEl.className = `alert ${t}`; };
+
+  initApp({ onAuthStateKnown: async (user, role) => {
+    if (!user) return;
+    // Ensure parent profile exists, else block
+    const snap = await getDoc(doc(db, 'parents', user.uid)).catch(() => null);
+    if (snap && snap.exists()) { window.location.href = './parent.html'; return; }
+    setAlert('This account is not a Parent account. Please sign out and use Parent credentials.', 'error');
+  }});
+
+  document.getElementById('form').addEventListener('submit', async (e) => {
+    e.preventDefault(); setAlert('Signing in...');
+    try {
+      await signIn(document.getElementById('email').value.trim(), document.getElementById('password').value);
+      // onAuthStateKnown will navigate when parent doc exists
+    } catch (err) { setAlert(err.message || String(err), 'error'); }
+  });
+</script>
+</body></html>

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Staff Dashboard — Child Care IS</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="app-header">
+    <div class="container header-content">
+      <div class="branding">
+        <h1>Doctor Dashboard</h1>
+      </div>
+      <nav class="header-nav">
+        <button class="btn" id="signout">Sign out</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container main-content">
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="attendance">Attendance</button>
+      <button class="tab" data-tab="health">Health</button>
+      <button class="tab" data-tab="schedule">Schedule</button>
+      <button class="tab" data-tab="billing">Billing</button>
+    </div>
+
+    <section class="card" data-panel="attendance">
+      <h2>Record Attendance</h2>
+      <form id="attendance-form" class="grid-2">
+        <label>Child ID
+          <input name="childId" required placeholder="CHILD_001" />
+        </label>
+        <label>Staff ID
+          <input name="staffId" required placeholder="STAFF_001" id="staffIdInput" />
+        </label>
+        <label>Type
+          <select name="type">
+            <option value="checkin">Check In</option>
+            <option value="checkout">Check Out</option>
+          </select>
+        </label>
+        <div style="align-self:end; display:flex; gap:8px;">
+          <button class="btn primary" type="submit">Save</button>
+        </div>
+      </form>
+      <div class="alert" id="attendance-alert"></div>
+      <p class="muted">QR scanning can be integrated with a library like Html5Qrcode or QuaggaJS in a subsequent iteration.</p>
+    </section>
+
+    <section class="card" data-panel="health" hidden>
+      <h2>Health Incident</h2>
+      <form id="health-form" class="grid-2">
+        <label>Child ID
+          <input name="childId" required placeholder="CHILD_001" />
+        </label>
+        <label>Type
+          <input name="type" required placeholder="Fever / Allergy / Injury" />
+        </label>
+        <label>Temperature (°C)
+          <input name="temperature" type="number" step="0.1" placeholder="38.5" />
+        </label>
+        <label>Notes
+          <input name="notes" placeholder="Brief notes" />
+        </label>
+        <div style="align-self:end; display:flex; gap:8px;">
+          <button class="btn primary" type="submit">Log Incident</button>
+        </div>
+      </form>
+      <div class="alert" id="health-alert"></div>
+    </section>
+
+    <section class="card" data-panel="schedule" hidden>
+      <h2>Add Schedule Entry</h2>
+      <form id="schedule-form" class="grid-2">
+        <label>Date
+          <input type="date" name="date" required />
+        </label>
+        <label>Group
+          <input name="childGroup" placeholder="Toddlers" />
+        </label>
+        <label>Title
+          <input name="title" placeholder="Nap time" />
+        </label>
+        <label>Start
+          <input type="time" name="startTime" />
+        </label>
+        <label>End
+          <input type="time" name="endTime" />
+        </label>
+        <label>Notes
+          <input name="notes" />
+        </label>
+        <div style="align-self:end; display:flex; gap:8px;">
+          <button class="btn primary" type="submit">Add</button>
+        </div>
+      </form>
+      <div class="alert" id="schedule-alert"></div>
+    </section>
+
+    <section class="card" data-panel="billing" hidden>
+      <h2>Create Invoice</h2>
+      <form id="billing-form" class="grid-2">
+        <label>Parent ID
+          <input name="parentId" required placeholder="PARENT_001" />
+        </label>
+        <label>Child ID
+          <input name="childId" required placeholder="CHILD_001" />
+        </label>
+        <label>Line Item Description
+          <input name="desc" required placeholder="Tuition" />
+        </label>
+        <label>Quantity
+          <input name="qty" type="number" step="1" value="1" required />
+        </label>
+        <label>Unit Price
+          <input name="price" type="number" step="0.01" value="0" required />
+        </label>
+        <div style="align-self:end; display:flex; gap:8px;">
+          <button class="btn primary" type="submit">Create Invoice</button>
+        </div>
+      </form>
+      <div class="alert" id="billing-alert"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initApp, signOutUser } from './app/app.js';
+    import { initManualForm } from './app/modules/attendance.js';
+    import { logIncident } from './app/modules/health.js';
+    import { addScheduleEntry } from './app/modules/scheduling.js';
+    import { createInvoice } from './app/modules/billing.js';
+
+    // Enforce login and role: only doctor/admin allowed here
+    initApp({ onAuthStateKnown: (user, role) => {
+      if (!user) { location.replace('./index.html'); return; }
+      if (!(role === 'doctor' || role === 'admin' || role === 'staff')) { location.replace('./parent.html'); }
+    }});
+
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+    const panels = Array.from(document.querySelectorAll('[data-panel]'));
+    tabs.forEach(btn => btn.addEventListener('click', () => {
+      tabs.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      panels.forEach(p => p.hidden = p.getAttribute('data-panel') !== btn.dataset.tab);
+    }));
+
+    document.getElementById('signout').addEventListener('click', async () => {
+      await signOutUser();
+      window.location.href = './index.html';
+    });
+
+    // Autofill staff ID with current user uid when available
+    import('./app/app.js').then(({ auth }) => {
+      const input = document.getElementById('staffIdInput');
+      const setUid = () => { if (auth && auth.currentUser && input && !input.value) input.value = auth.currentUser.uid; };
+      setTimeout(setUid, 250);
+      document.addEventListener('visibilitychange', setUid);
+    });
+
+    const attAlert = (m,t='info') => { const el = document.getElementById('attendance-alert'); el.textContent=m; el.className = `alert ${t}`; };
+    const healthAlert = (m,t='info') => { const el = document.getElementById('health-alert'); el.textContent=m; el.className = `alert ${t}`; };
+    const schedAlert = (m,t='info') => { const el = document.getElementById('schedule-alert'); el.textContent=m; el.className = `alert ${t}`; };
+    const billAlert = (m,t='info') => { const el = document.getElementById('billing-alert'); el.textContent=m; el.className = `alert ${t}`; };
+
+    // Attendance form
+    import('./app/modules/attendance.js').then(({ initManualForm }) => {
+      initManualForm(document.getElementById('attendance-form'), attAlert);
+    });
+
+    // Health form
+    document.getElementById('health-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      healthAlert('Logging...');
+      try {
+        await logIncident({
+          childId: f.childId.value.trim(),
+          type: f.type.value.trim(),
+          temperature: f.temperature.value ? Number(f.temperature.value) : null,
+          notes: f.notes.value.trim()
+        });
+        f.reset();
+        healthAlert('Incident logged and parent notified', 'success');
+      } catch (err) { healthAlert(err.message || String(err), 'error'); }
+    });
+
+    // Schedule form
+    document.getElementById('schedule-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      schedAlert('Saving...');
+      try {
+        await addScheduleEntry({
+          date: f.date.value,
+          childGroup: f.childGroup.value,
+          title: f.title.value,
+          startTime: f.startTime.value,
+          endTime: f.endTime.value,
+          notes: f.notes.value
+        });
+        f.reset();
+        schedAlert('Schedule entry added', 'success');
+      } catch (err) { schedAlert(err.message || String(err), 'error'); }
+    });
+
+    // Billing form
+    document.getElementById('billing-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      billAlert('Creating invoice...');
+      try {
+        await createInvoice({
+          parentId: f.parentId.value.trim(),
+          childId: f.childId.value.trim(),
+          lineItems: [{ description: f.desc.value.trim(), quantity: Number(f.qty.value), unitPrice: Number(f.price.value) }]
+        });
+        f.reset();
+        billAlert('Invoice created', 'success');
+      } catch (err) { billAlert(err.message || String(err), 'error'); }
+    });
+  </script>
+</body>
+</html>

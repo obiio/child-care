@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Parent Portal — Child Care IS</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="app-header">
+    <div class="container header-content">
+      <div class="branding">
+        <h1>Parent Portal</h1>
+      </div>
+          </div>
+  </header>
+
+  <main class="container main-content">
+    <section class="card">
+      <h2>Real-time Updates</h2>
+      <div id="feed"></div>
+      <div class="note">This prototype uses a messages collection as a feed; production should use FCM push notifications.</div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initApp, getUserRole } from './app/app.js';
+    import { subscribeToParentMessages } from './app/modules/parent.js';
+
+    const feed = document.getElementById('feed');
+    const render = (items) => {
+      feed.innerHTML = '';
+      if (!items.length) { feed.textContent = 'No messages yet.'; return; }
+      const wrap = document.createElement('div');
+      wrap.style.display = 'grid';
+      wrap.style.gap = '12px';
+      items.forEach(i => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const p = i.payload || {};
+        const h = document.createElement('h3');
+        h.style.margin = '0 0 6px 0';
+        const b = document.createElement('div');
+        b.className = 'muted';
+        const d = i.createdAt?.toDate?.() ? i.createdAt.toDate() : null;
+        const time = d ? d.toLocaleString() : '';
+
+        if (p.kind === 'attendance') {
+          h.textContent = `Attendance update`;
+          b.textContent = `Child ${p.childId} ${p.type}. ${time}`;
+        } else if (p.kind === 'health') {
+          h.textContent = `Health update`;
+          b.textContent = `${p.type} for child ${p.childId}` + (p.temperature ? ` (Temp: ${p.temperature}°C)` : '') + (time ? ` · ${time}` : '');
+        } else {
+          h.textContent = `Update`;
+          b.textContent = JSON.stringify(p);
+        }
+        card.appendChild(h);
+        card.appendChild(b);
+        wrap.appendChild(card);
+      });
+      feed.appendChild(wrap);
+    };
+
+    initApp({ onAuthStateKnown: async (user, role) => {
+      if (!user) { location.replace('./index.html'); return; }
+      // Only redirect away if we explicitly know the user is staff/admin
+      if (role === 'staff' || role === 'admin' || role === 'doctor') { location.replace('./dashboard.html'); return; }
+      // Unknown role treated as parent for viewing own feed
+      const parentId = user.uid;
+      subscribeToParentMessages(parentId, render);
+    }});
+  </script>
+</body>
+</html>

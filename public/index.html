@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Child Care IS — Welcome</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    .hero { padding: 32px 0; }
+    .role-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    @media (max-width: 860px) { .role-grid { grid-template-columns: 1fr; } }
+    .role-card { display: grid; gap: 14px; }
+    .role-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .role-card .title { display: flex; align-items: center; gap: 10px; margin: 0; }
+    .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: rgba(34,211,238,.15); color: #67e8f9; border: 1px solid rgba(34,211,238,.35); }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="container header-content">
+      <div class="branding">
+        <svg width="28" height="28" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#22d3ee"/>
+              <stop offset="100%" stop-color="#06b6d4"/>
+            </linearGradient>
+          </defs>
+          <path d="M24 4c11.046 0 20 8.954 20 20s-8.954 20-20 20S4 35.046 4 24 12.954 4 24 4Z" fill="url(#g1)" opacity="0.2"/>
+          <path d="M24 12c6.627 0 12 5.373 12 12 0 3.866-1.824 7.297-4.652 9.499-.627.489-1.53.214-1.82-.49-.39-.94-.87-2.12-1.08-2.63-.25-.6-.05-1.29.45-1.71C30.1 27.56 31 25.86 31 24c0-3.866-3.134-7-7-7s-7 3.134-7 7c0 1.86.9 3.56 2.102 4.669.5.42.7 1.11.45 1.71-.21.51-.69 1.69-1.08 2.63-.29.704-1.193.979-1.82.49C13.824 31.297 12 27.866 12 24c0-6.627 5.373-12 12-12Z" fill="#6ee7f9"/>
+        </svg>
+        <h1>Child Care Information System</h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-content hero">
+    <section class="card" style="text-align:center">
+      <h2 style="margin-bottom:6px">Welcome</h2>
+      <p class="muted" style="max-width:740px;margin:0 auto 4px auto">Choose your portal to continue. You will sign in or create an account specific to your role. Portals are separate and secured.</p>
+      <span class="pill">Secure · Role-based access</span>
+    </section>
+
+    <div class="role-grid">
+      <section class="card role-card">
+        <h3 class="title">Parent Portal</h3>
+        <p class="muted">View your child’s attendance, health updates, schedules, invoices, and messages in real time.</p>
+        <div class="role-actions">
+          <a class="btn primary" href="./login-parent.html">Login as Parent</a>
+          <a class="btn link" href="./signup-parent.html">Create Parent Account</a>
+        </div>
+      </section>
+
+      <section class="card role-card">
+        <h3 class="title">Doctor Portal</h3>
+        <p class="muted">Record attendance, manage health incidents, schedules, and billing. Access is restricted to authorized staff.</p>
+        <div class="role-actions">
+          <a class="btn primary" href="./login-doctor.html">Login as Doctor</a>
+          <a class="btn link" href="./signup-doctor.html">Create Doctor Account</a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="container">
+      <small>&copy; 2025 Child Care Information System</small>
+    </div>
+  </footer>
+</body>
+</html>
